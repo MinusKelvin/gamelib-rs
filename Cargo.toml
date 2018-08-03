@@ -1,0 +1,14 @@
+[package]
+name = "gamelib"
+version = "0.1.0"
+authors = ["MinusKelvin <minuskelvin.carlson@gmail.com>"]
+
+[dependencies]
+libc = "0.2"
+gl = "0.10.0"
+enum_primitive = "*"
+bitflags = "1.0"
+cgmath = "0.16.1"
+
+[dependencies.glfw-sys]
+path = "../glfw-sys"
