@@ -5,17 +5,14 @@ use graphics::Context;
 
 pub struct RenderTarget<'a> {
     id: GLuint,
-    ctx: &'a Context
+    ctx: &'a Context,
+    pub(crate) width: i32,
+    pub(crate) height: i32
 }
 
 impl Context {
-    /// May only be called once
-    pub fn create_default_framebuffer(&self) -> RenderTarget {
-        if self.default_fbo_created.get() {
-            panic!("Cannot create default framebuffer twice")
-        }
-        self.default_fbo_created.set(true);
-        RenderTarget { id: 0, ctx: self }
+    pub(crate) fn create_default_framebuffer(&self) -> RenderTarget {
+        RenderTarget { id: 0, ctx: self, width: 0, height: 0 }
     }
 }
 

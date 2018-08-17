@@ -32,9 +32,10 @@ enum InternalEvent {
     Refresh
 }
 
-pub struct Target<'a> {
+pub(crate) struct Target<'a> {
     pub game: Box<Game + 'a>,
     pub queue: Vec<Event>,
+    pub screen: ::graphics::RenderTarget<'a>,
     pub polling: bool
 }
 
@@ -44,9 +45,15 @@ fn send(window: *mut GLFWwindow, event: InternalEvent) {
     let target = unsafe { &mut *(p as *mut Target) };
     if target.polling {
         match event {
-            InternalEvent::User(e) => target.game.event(e),
+            InternalEvent::User(e) => {
+                if let Event::Resize(width, height) = e {
+                    target.screen.width = width;
+                    target.screen.height = height;
+                }
+                target.game.event(e);
+            },
             InternalEvent::Refresh => {
-                target.game.frame(0.0);
+                target.game.frame(&mut target.screen, 0.0);
                 unsafe { glfwSwapBuffers(window) };
             }
         }

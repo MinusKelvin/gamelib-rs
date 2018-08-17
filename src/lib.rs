@@ -18,7 +18,7 @@ pub use events::{ Event, MouseButton, Key, Modifiers };
 pub mod graphics;
 
 pub trait Game {
-    fn frame(&mut self, delta: f64);
+    fn frame(&mut self, screen: &mut graphics::RenderTarget, delta: f64);
 
     fn should_exit(&mut self) -> bool;
 
@@ -53,6 +53,10 @@ where
             }
         };
         drop(title);
+        let gaurd = ScopeGaurd(|| {
+            glfwDestroyWindow(window);
+            glfwTerminate();
+        });
 
         glfwMakeContextCurrent(window);
         gl::load_with(|s| {
@@ -66,13 +70,18 @@ where
         let mut target = events::Target {
             game: init(&ctx),
             queue: Vec::new(),
-            polling: false
+            polling: false,
+            screen: ctx.create_default_framebuffer()
         };
         glfwSetWindowUserPointer(window, &mut target as *mut events::Target as *mut c_void);
 
         let mut last_time = glfwGetTime();
         while !target.game.should_exit() {
             for e in target.queue.drain(0..) {
+                if let Event::Resize(width, height) = e {
+                    target.screen.width = width;
+                    target.screen.height = height;
+                }
                 target.game.event(e);
             }
             target.polling = true;
@@ -82,7 +91,7 @@ where
             let now = glfwGetTime();
             let delta = now - last_time;
             last_time = now;
-            target.game.frame(delta);
+            target.game.frame(&mut target.screen, delta);
 
             glfwSwapBuffers(window);
         }
@@ -90,9 +99,7 @@ where
         glfwSetWindowUserPointer(window, std::ptr::null_mut());
 
         drop(target);
-
-        glfwDestroyWindow(window);
-        glfwTerminate();
+        drop(gaurd);
     }
 }
 
@@ -154,6 +161,14 @@ extern "C" fn error_panic(code: c_int, desc: *const c_char) {
         GLFW_NO_WINDOW_CONTEXT => "GLFW_NO_WINDOW_CONTEXT",
         _ => "Unknown Error"
     }, from_cstring(desc));
+}
+
+struct ScopeGaurd<F: FnMut()>(F);
+
+impl<F: FnMut()> Drop for ScopeGaurd<F> {
+    fn drop(&mut self) {
+        (self.0)();
+    }
 }
 
 pub mod tlprog {

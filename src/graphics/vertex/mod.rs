@@ -23,6 +23,7 @@ pub use self::format::Format;
 
 pub mod layout;
 pub use self::layout::Layout;
+pub use self::layout::LayoutBuilder;
 
 pub mod structure;
 pub use self::structure::Struct;

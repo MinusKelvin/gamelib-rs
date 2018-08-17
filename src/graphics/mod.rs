@@ -1,5 +1,3 @@
-use std::cell::Cell;
-
 use gl::types::*;
 use gl;
 
@@ -13,7 +11,7 @@ mod buffer;
 pub use self::buffer::*;
 
 mod render_command;
-pub use self::render_command::*;
+pub use self::render_command::{ RenderCommand };
 
 pub mod vertex;
 
@@ -21,7 +19,6 @@ pub mod shader;
 pub use self::shader::{ Program, GlslType, glsl_type };
 
 pub struct Context {
-    default_fbo_created: Cell<bool>
 }
 
 impl Context {
@@ -31,7 +28,7 @@ impl Context {
             gl::GenVertexArrays(1, &mut vao);
             gl::BindVertexArray(vao);
         }
-        Self { default_fbo_created: Cell::from(false) }
+        Self {  }
     }
 
     pub (crate) fn bind_framebuffer(&self, id: GLuint) {

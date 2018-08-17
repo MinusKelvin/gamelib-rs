@@ -263,7 +263,6 @@ macro_rules! vertex_struct_type {
 
 #[macro_export]
 macro_rules! vertex_struct {
-    (@e $attr:path: $value:expr) => ($crate::graphics::vertex::structure::Atom::new($attr, $value));
-    (@e $attr:path: $value:expr, $($rest:tt)*) => ($crate::graphics::vertex::structure::Cons::new($attr, $value, vertex_struct!(@e $($rest)*)));
-    ($($rest:tt)*) => ($crate::graphics::vertex::structure::Reshape::reshape(vertex_struct!(@e $($rest)*)));
+    ($attr:path: $value:expr) => ($crate::graphics::vertex::structure::Atom::new($attr, $value));
+    ($attr:path: $value:expr, $($rest:tt)*) => ($crate::graphics::vertex::structure::Cons::new($attr, $value, vertex_struct!($($rest)*)));
 }
