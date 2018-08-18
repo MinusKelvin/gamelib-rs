@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 
 use gl::types::*;
 
-use graphics::shader::GlslType;
+use gfx::shader::GlslType;
 use tlprog::{ TLNatural, Zero, Successor };
 
 pub trait Uniform : Debug + Copy {

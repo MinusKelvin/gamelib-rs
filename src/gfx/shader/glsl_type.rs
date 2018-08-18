@@ -1,5 +1,5 @@
 use cgmath::*;
-use graphics::render_command::UniformData;
+use gfx::render_command::UniformData;
 
 pub trait GlslType : Copy {
     type Data;

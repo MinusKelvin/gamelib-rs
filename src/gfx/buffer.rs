@@ -5,8 +5,8 @@ use std::os::raw::c_void;
 use gl::types::*;
 use gl;
 
-use graphics::{ Context };
-use graphics::vertex;
+use gfx::{ Context };
+use gfx::vertex;
 
 pub struct VertexBuffer<'a, S: vertex::Struct> {
     pub (crate) id: GLuint,

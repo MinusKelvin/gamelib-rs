@@ -7,6 +7,9 @@ pub use self::texture::*;
 mod framebuffer;
 pub use self::framebuffer::*;
 
+mod surface;
+pub use self::surface::*;
+
 mod buffer;
 pub use self::buffer::*;
 

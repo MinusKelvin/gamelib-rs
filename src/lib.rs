@@ -15,10 +15,10 @@ use ffi::*;
 mod events;
 pub use events::{ Event, MouseButton, Key, Modifiers };
 
-pub mod graphics;
+pub mod gfx;
 
 pub trait Game {
-    fn frame(&mut self, screen: &mut graphics::RenderTarget, delta: f64);
+    fn frame(&mut self, screen: gfx::Surface, delta: f64);
 
     fn should_exit(&mut self) -> bool;
 
@@ -27,16 +27,18 @@ pub trait Game {
 
 pub fn launch<F>(config: Configuration, init: F)
 where
-    F: for<'a> FnOnce(&'a graphics::Context) -> Box<Game + 'a>
+    F: for<'a> FnOnce(&'a gfx::Context) -> Box<Game + 'a>
 {
     unsafe {
         init_glfw();
 
         let title = to_cstring(config.title);
         let window = match config.mode {
-            WindowMode::Windowed { width, height, resizeable } => {
+            WindowMode::Windowed { width, height, resizeable, min_limits, max_limits } => {
                 glfwWindowHint(GLFW_RESIZABLE, if resizeable { 1 } else { 0 });
-                glfwCreateWindow(width, height, title.as_ptr(), std::ptr::null_mut(), std::ptr::null_mut())
+                let w = glfwCreateWindow(width, height, title.as_ptr(), std::ptr::null_mut(), std::ptr::null_mut());
+                glfwSetWindowSizeLimits(w, min_limits.0.unwrap_or(-1), min_limits.1.unwrap_or(-1), max_limits.0.unwrap_or(-1), max_limits.1.unwrap_or(-1));
+                w
             },
             WindowMode::Maximised => {
                 glfwWindowHint(GLFW_MAXIMIZED, 1);
@@ -63,15 +65,23 @@ where
             let c = to_cstring(s);
             glfwGetProcAddress(c.as_ptr())
         });
+        glfwSwapInterval(0);
 
         setup_callbacks(window);
 
-        let ctx = graphics::Context::create();
-        let mut target = events::Target {
-            game: init(&ctx),
-            queue: Vec::new(),
-            polling: false,
-            screen: ctx.create_default_framebuffer()
+        let ctx = gfx::Context::create();
+        let mut target = {
+            let mut w = 0;
+            let mut h = 0;
+            glfwGetFramebufferSize(window, &mut w, &mut h);
+            events::Target {
+                game: init(&ctx),
+                ctx: &ctx,
+                queue: Vec::new(),
+                polling: false,
+                width: w,
+                height: h
+            }
         };
         glfwSetWindowUserPointer(window, &mut target as *mut events::Target as *mut c_void);
 
@@ -79,8 +89,8 @@ where
         while !target.game.should_exit() {
             for e in target.queue.drain(0..) {
                 if let Event::Resize(width, height) = e {
-                    target.screen.width = width;
-                    target.screen.height = height;
+                    target.width = width;
+                    target.height = height;
                 }
                 target.game.event(e);
             }
@@ -91,7 +101,7 @@ where
             let now = glfwGetTime();
             let delta = now - last_time;
             last_time = now;
-            target.game.frame(&mut target.screen, delta);
+            target.game.frame(target.ctx.create_screen_surface(target.width, target.height), delta);
 
             glfwSwapBuffers(window);
         }
@@ -112,7 +122,9 @@ pub enum WindowMode {
     Windowed {
         width: i32,
         height: i32,
-        resizeable: bool
+        resizeable: bool,
+        min_limits: (Option<i32>, Option<i32>),
+        max_limits: (Option<i32>, Option<i32>)
     },
     Maximised,
     Fullscreen

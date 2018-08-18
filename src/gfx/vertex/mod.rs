@@ -5,14 +5,14 @@ macro_rules! vertex_attributes {
     (pub $name:ident: $type:ty) => (
         #[derive(Debug,Copy,Clone)]
         pub struct $name;
-        impl $crate::graphics::vertex::Attribute for $name {
+        impl $crate::gfx::vertex::Attribute for $name {
             type Type = $type;
         }
     );
     ($name:ident: $type:ty) => (
         #[derive(Debug,Copy,Clone)]
         struct $name;
-        impl $crate::graphics::vertex::Attribute for $name {
+        impl $crate::gfx::vertex::Attribute for $name {
             type Type = $type;
         }
     )
@@ -30,7 +30,7 @@ pub use self::structure::Struct;
 
 use std::fmt::Debug;
 
-use graphics::GlslType;
+use gfx::GlslType;
 
 pub trait Attribute : Debug + Copy {
     type Type: GlslType;

@@ -7,11 +7,11 @@ use gl;
 use cgmath::*;
 
 use tlprog::{ TLNatural, TLOption, TLSome, TLNone };
-use graphics::{ Context, VertexBuffer };
-use graphics::framebuffer::RenderTarget;
-use graphics::vertex;
-use graphics::shader;
-use graphics::shader::GlslType;
+use gfx::{ Context, VertexBuffer };
+use gfx::Surface;
+use gfx::vertex;
+use gfx::shader;
+use gfx::shader::GlslType;
 
 #[derive(Debug)]
 struct AttribPointerData {
@@ -61,7 +61,7 @@ impl<'a, 'b, L: vertex::Layout, UL: shader::UniformList> RenderCommand<'a, 'b, L
 }
 
 impl<'a: 'b, 'b> RenderCommand<'a, 'b, vertex::layout::Nil, shader::uniform::Nil, TLSome<i32>> {
-    pub fn execute(&self, to: &mut RenderTarget) {
+    pub fn execute(&self, to: &mut Surface) {
         unsafe {
             to.bind();
             self.ctx.use_program(self.shader);

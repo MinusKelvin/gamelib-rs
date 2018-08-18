@@ -2,8 +2,8 @@ use std::marker::PhantomData;
 use std::mem::size_of;
 use std::fmt;
 
-use graphics::vertex::{ Attribute, Format, Layout };
-use graphics::vertex::layout;
+use gfx::vertex::{ Attribute, Format, Layout };
+use gfx::vertex::layout;
 use tlprog::{ TLNatural, Zero, Successor };
 
 #[repr(C)]
@@ -257,12 +257,12 @@ where
 
 #[macro_export]
 macro_rules! vertex_struct_type {
-    ($attr:ty: $format:ty) => ($crate::graphics::vertex::structure::Atom<$attr, $format>);
-    ($attr:ty: $format:ty, $($rest:tt)*) => ($crate::graphics::vertex::structure::Cons<$attr, $format, vertex_struct_type!($($rest)*)>);
+    ($attr:ty: $format:ty) => ($crate::gfx::vertex::structure::Atom<$attr, $format>);
+    ($attr:ty: $format:ty, $($rest:tt)*) => ($crate::gfx::vertex::structure::Cons<$attr, $format, vertex_struct_type!($($rest)*)>);
 }
 
 #[macro_export]
 macro_rules! vertex_struct {
-    ($attr:path: $value:expr) => ($crate::graphics::vertex::structure::Atom::new($attr, $value));
-    ($attr:path: $value:expr, $($rest:tt)*) => ($crate::graphics::vertex::structure::Cons::new($attr, $value, vertex_struct!($($rest)*)));
+    ($attr:path: $value:expr) => ($crate::gfx::vertex::structure::Atom::new($attr, $value));
+    ($attr:path: $value:expr, $($rest:tt)*) => ($crate::gfx::vertex::structure::Cons::new($attr, $value, vertex_struct!($($rest)*)));
 }

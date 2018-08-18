@@ -5,9 +5,9 @@ use std::ptr;
 use gl::types::*;
 use gl;
 
-use graphics::{ Context };
-use graphics::vertex;
-use graphics::shader::{ UniformList, UniformListBuilder };
+use gfx::{ Context };
+use gfx::vertex;
+use gfx::shader::{ UniformList, UniformListBuilder };
 
 pub struct Program<'a, L: vertex::Layout, UL: UniformList> {
     pub (crate) ctx: &'a Context,
@@ -98,13 +98,13 @@ impl<'a, L: vertex::Layout, UL: UniformList> Drop for Program<'a, L, UL> {
 
 #[macro_export]
 macro_rules! shader_program {
-    (@layout ()) => { $crate::graphics::vertex::layout::BuilderNil };
+    (@layout ()) => { $crate::gfx::vertex::layout::BuilderNil };
     (@layout ($name:ident: $type:ty)) => {{
-        let l: $crate::graphics::vertex::layout::BuilderCons<$type, _> = $crate::graphics::vertex::layout::BuilderCons::new(stringify!($name), shader_program!(@layout ()));
+        let l: $crate::gfx::vertex::layout::BuilderCons<$type, _> = $crate::gfx::vertex::layout::BuilderCons::new(stringify!($name), shader_program!(@layout ()));
         l
     }};
     (@layout ($name:ident: $type:ty, $($rest:tt)*)) => {{
-        let l: $crate::graphics::vertex::layout::BuilderCons<$type, _> = $crate::graphics::vertex::layout::BuilderCons::new(stringify!($name), shader_program!(@layout ($($rest)*)));
+        let l: $crate::gfx::vertex::layout::BuilderCons<$type, _> = $crate::gfx::vertex::layout::BuilderCons::new(stringify!($name), shader_program!(@layout ($($rest)*)));
         l
     }};
 
@@ -115,18 +115,18 @@ macro_rules! shader_program {
         $(uniform $name2:ident: $t2:ty;)*
         code $_2:tt
     }) => { shader_program!(@uniformlist $($name1: $t1;)* $($name2: $t2;)*); };
-    (@uniformlist) => { $crate::graphics::shader::uniform::BuilderNil };
+    (@uniformlist) => { $crate::gfx::shader::uniform::BuilderNil };
     (@uniformlist $name:ident: $type:ty;) => {{
-        let l: $crate::graphics::shader::uniform::BuilderCons<$type, _> = $crate::graphics::shader::uniform::BuilderCons::new(stringify!($name), shader_program!(@uniformlist));
+        let l: $crate::gfx::shader::uniform::BuilderCons<$type, _> = $crate::gfx::shader::uniform::BuilderCons::new(stringify!($name), shader_program!(@uniformlist));
         l
     }};
     (@uniformlist $name:ident: $type:ty; $($rest:tt)*) => {{
-        let l: $crate::graphics::shader::uniform::BuilderCons<$type, _> = $crate::graphics::shader::uniform::BuilderCons::new(stringify!($name), shader_program!(@uniformlist $($rest)*));
+        let l: $crate::gfx::shader::uniform::BuilderCons<$type, _> = $crate::gfx::shader::uniform::BuilderCons::new(stringify!($name), shader_program!(@uniformlist $($rest)*));
         l
     }};
 
     (@vcode ($($i_name:ident: $i_t:ty),*) $a:tt $b:tt) => {
-        shader_program!(@code ($($i_name: <$i_t as $crate::graphics::vertex::Attribute>::Type),*) $a $b)
+        shader_program!(@code ($($i_name: <$i_t as $crate::gfx::vertex::Attribute>::Type),*) $a $b)
     };
 
     (@code ($($i_name:ident: $i_t:ty),*) {$(uniform $u_name:ident: $u_t:ty;)* code { $($code:expr),* } } ($($o_name:ident: $o_t:ty),*)) => {
@@ -138,9 +138,9 @@ macro_rules! shader_program {
                 $("out {} ", stringify!($o_name), ";",)*
                 "{}"
             ),
-            $(<$i_t as $crate::graphics::shader::GlslType>::TYPE_STRING,)*
-            $(<<$u_t as $crate::graphics::shader::Uniform>::Type as $crate::graphics::shader::GlslType>::TYPE_STRING,)*
-            $(<$o_t as $crate::graphics::shader::GlslType>::TYPE_STRING,)*
+            $(<$i_t as $crate::gfx::shader::GlslType>::TYPE_STRING,)*
+            $(<<$u_t as $crate::gfx::shader::Uniform>::Type as $crate::gfx::shader::GlslType>::TYPE_STRING,)*
+            $(<$o_t as $crate::gfx::shader::GlslType>::TYPE_STRING,)*
             concat!($($code, "\n"),*)
         )
     };

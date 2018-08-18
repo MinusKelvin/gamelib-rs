@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 use gl::types::*;
 use gl;
 
-use graphics::Context;
+use gfx::Context;
 
 pub struct Texture2D<'a> {
     id: GLuint,

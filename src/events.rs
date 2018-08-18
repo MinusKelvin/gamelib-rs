@@ -34,9 +34,11 @@ enum InternalEvent {
 
 pub(crate) struct Target<'a> {
     pub game: Box<Game + 'a>,
+    pub ctx: &'a ::gfx::Context,
     pub queue: Vec<Event>,
-    pub screen: ::graphics::RenderTarget<'a>,
-    pub polling: bool
+    pub polling: bool,
+    pub width: i32,
+    pub height: i32,
 }
 
 fn send(window: *mut GLFWwindow, event: InternalEvent) {
@@ -47,13 +49,13 @@ fn send(window: *mut GLFWwindow, event: InternalEvent) {
         match event {
             InternalEvent::User(e) => {
                 if let Event::Resize(width, height) = e {
-                    target.screen.width = width;
-                    target.screen.height = height;
+                    target.width = width;
+                    target.height = height;
                 }
                 target.game.event(e);
             },
             InternalEvent::Refresh => {
-                target.game.frame(&mut target.screen, 0.0);
+                target.game.frame(target.ctx.create_screen_surface(target.width, target.height), 0.0);
                 unsafe { glfwSwapBuffers(window) };
             }
         }

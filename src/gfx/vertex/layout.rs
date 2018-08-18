@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 
 use gl::types::*;
 
-use graphics::vertex::Attribute;
+use gfx::vertex::Attribute;
 use tlprog::{ TLNatural, Zero, Successor };
 
 pub trait Layout : Debug + Copy {}

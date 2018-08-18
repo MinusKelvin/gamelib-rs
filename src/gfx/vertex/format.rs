@@ -5,8 +5,8 @@ use gl;
 
 use cgmath::{ Vector2, Vector3, Vector4 };
 
-use graphics::glsl_type;
-use graphics::GlslType;
+use gfx::glsl_type;
+use gfx::GlslType;
 
 pub trait Format : Debug + Copy {
     type Type: GlslType;
