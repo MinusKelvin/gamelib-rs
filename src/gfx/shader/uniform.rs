@@ -10,6 +10,26 @@ pub trait Uniform : Debug + Copy {
     type Type: GlslType;
 }
 
+#[macro_export]
+macro_rules! uniforms {
+    (pub $name:ident: $type:ty, $($rest:tt)+) => (uniforms!(pub $name: $type); uniforms!($($rest)*););
+    ($name:ident: $type:ty, $($rest:tt)+) => (uniforms!($name: $type); uniforms!($($rest)*););
+    (pub $name:ident: $type:ty) => (
+        #[derive(Debug,Copy,Clone)]
+        pub struct $name;
+        impl $crate::gfx::shader::Uniform for $name {
+            type Type = $type;
+        }
+    );
+    ($name:ident: $type:ty) => (
+        #[derive(Debug,Copy,Clone)]
+        struct $name;
+        impl $crate::gfx::shader::Uniform for $name {
+            type Type = $type;
+        }
+    )
+}
+
 pub trait UniformList : Debug + Copy {}
 
 #[derive(Debug, Copy, Clone)]

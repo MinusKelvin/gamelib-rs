@@ -9,6 +9,7 @@ gl = "0.10.0"
 enum_primitive = "*"
 bitflags = "1.0"
 cgmath = "0.16.1"
+image = "*"
 
 [dependencies.glfw-sys]
 path = "../glfw-sys"

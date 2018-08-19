@@ -1,6 +1,7 @@
 extern crate libc;
 extern crate gl;
 extern crate cgmath;
+extern crate image;
 
 #[macro_use]
 extern crate enum_primitive;
@@ -65,7 +66,6 @@ where
             let c = to_cstring(s);
             glfwGetProcAddress(c.as_ptr())
         });
-        glfwSwapInterval(0);
 
         setup_callbacks(window);
 
@@ -79,8 +79,8 @@ where
                 ctx: &ctx,
                 queue: Vec::new(),
                 polling: false,
-                width: w,
-                height: h
+                width: w as u32,
+                height: h as u32
             }
         };
         glfwSetWindowUserPointer(window, &mut target as *mut events::Target as *mut c_void);

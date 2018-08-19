@@ -6,10 +6,10 @@ use gl;
 use cgmath::{ Vector2, Vector3, Vector4 };
 
 use gfx::glsl_type;
-use gfx::GlslType;
+use gfx::GlslDataType;
 
 pub trait Format : Debug + Copy {
-    type Type: GlslType;
+    type Type: GlslDataType;
     type Concrete: Copy + Debug;
 
     const COMPONENTS: GLint;

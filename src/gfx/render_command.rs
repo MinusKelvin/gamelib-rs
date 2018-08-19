@@ -7,11 +7,11 @@ use gl;
 use cgmath::*;
 
 use tlprog::{ TLNatural, TLOption, TLSome, TLNone };
-use gfx::{ Context, VertexBuffer };
-use gfx::Surface;
+use gfx::{ Context, VertexBuffer, Surface, Texture2D };
 use gfx::vertex;
 use gfx::shader;
-use gfx::shader::GlslType;
+use gfx::shader::GlslDataType;
+use gfx::shader::glsl_type;
 
 #[derive(Debug)]
 struct AttribPointerData {
@@ -32,6 +32,7 @@ pub enum UniformData {
     Mat2(Matrix2<f32>),
     Mat3(Matrix3<f32>),
     Mat4(Matrix4<f32>),
+    Sampler2D(GLuint)
 }
 
 pub struct RenderCommand<'a: 'b, 'b, L: vertex::Layout + 'b, UL: shader::UniformList + 'b, C: TLOption<i32>> {
@@ -70,11 +71,13 @@ impl<'a: 'b, 'b> RenderCommand<'a, 'b, vertex::layout::Nil, shader::uniform::Nil
                 gl::VertexAttribPointer(binding.index, binding.size, binding.gltype, binding.normalized, binding.stride, binding.offset as *const GLvoid);
                 gl::EnableVertexAttribArray(binding.index);
             }
+            let mut active_tex = 1;
             for (index, data) in &self.uniforms {
-                data.submit(*index);
+                data.submit(*index, &mut active_tex);
             }
             gl::DrawArrays(gl::TRIANGLES, 0, self.vertex_count.0);
 
+            gl::ActiveTexture(gl::TEXTURE0);
             for binding in &self.bindings {
                 gl::DisableVertexAttribArray(binding.index);
             }
@@ -134,11 +137,12 @@ impl<'a: 'b, 'b, L: vertex::Layout, UL: shader::UniformList, C: TLOption<i32>> R
         }
     }
 
-    pub fn uniform<U, I>(mut self, _name: U, value: <<U as shader::Uniform>::Type as GlslType>::Data) -> RenderCommand<'a, 'b, L, UL::Remainder, C>
+    pub fn uniform_data<U, I>(mut self, _name: U, value: <<U as shader::Uniform>::Type as GlslDataType>::Data) -> RenderCommand<'a, 'b, L, UL::Remainder, C>
     where
         U: shader::Uniform,
         UL: shader::uniform::Pluck<U, I>,
-        I: TLNatural
+        I: TLNatural,
+        U::Type: GlslDataType
     {
         let (idx, r) = self.remaining_uniforms.pluck();
         self.uniforms.push((idx, U::Type::into_uniform_data(value)));
@@ -153,10 +157,30 @@ impl<'a: 'b, 'b, L: vertex::Layout, UL: shader::UniformList, C: TLOption<i32>> R
             _phantom: PhantomData
         }
     }
+
+    pub fn uniform_sampler_2d<U, I>(mut self, _name: U, value: &'b Texture2D<'a>) -> RenderCommand<'a, 'b, L, UL::Remainder, C>
+    where
+        U: shader::Uniform<Type=glsl_type::Sampler2D>,
+        UL: shader::uniform::Pluck<U, I>,
+        I: TLNatural
+    {
+        let (idx, r) = self.remaining_uniforms.pluck();
+        self.uniforms.push((idx, UniformData::Sampler2D(value.id)));
+        RenderCommand {
+            ctx: self.ctx,
+            bindings: self.bindings,
+            uniforms: self.uniforms,
+            shader: self.shader,
+            remaining_layout: self.remaining_layout,
+            remaining_uniforms: r,
+            vertex_count: self.vertex_count,
+            _phantom: PhantomData
+        }
+    }
 }
 
 impl UniformData {
-    fn submit(&self, index: GLint) {
+    fn submit(&self, index: GLint, active_tex: &mut u32) {
         unsafe {
             match self {
                 UniformData::Float(v) => gl::Uniform1f(index, *v),
@@ -166,6 +190,12 @@ impl UniformData {
                 UniformData::Mat2(v) => gl::UniformMatrix2fv(index, 1, gl::FALSE, v.as_ptr()),
                 UniformData::Mat3(v) => gl::UniformMatrix3fv(index, 1, gl::FALSE, v.as_ptr()),
                 UniformData::Mat4(v) => gl::UniformMatrix4fv(index, 1, gl::FALSE, v.as_ptr()),
+                UniformData::Sampler2D(i) => {
+                    gl::Uniform1i(index, *active_tex as GLint);
+                    gl::ActiveTexture(gl::TEXTURE0 + *active_tex);
+                    *active_tex += 1;
+                    gl::BindTexture(gl::TEXTURE_2D, *i);
+                }
             }
         }
     }

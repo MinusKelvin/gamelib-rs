@@ -5,4 +5,4 @@ pub mod uniform;
 pub use self::uniform::{ Uniform, UniformList, UniformListBuilder };
 
 pub mod glsl_type;
-pub use self::glsl_type::GlslType;
+pub use self::glsl_type::{ GlslType, GlslDataType };

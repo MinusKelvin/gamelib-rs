@@ -10,7 +10,7 @@ pub enum Event {
     Close,
     Focus,
     Unfocus,
-    Resize(i32, i32),
+    Resize(u32, u32),
     ContentScaleChange(f32, f32),
     Minimize,
     Unminimize,
@@ -37,8 +37,8 @@ pub(crate) struct Target<'a> {
     pub ctx: &'a ::gfx::Context,
     pub queue: Vec<Event>,
     pub polling: bool,
-    pub width: i32,
-    pub height: i32,
+    pub width: u32,
+    pub height: u32,
 }
 
 fn send(window: *mut GLFWwindow, event: InternalEvent) {
@@ -81,7 +81,7 @@ pub extern "C" fn window_focus(window: *mut GLFWwindow, focused: c_int) {
 }
 
 pub extern "C" fn framebuffer_size(window: *mut GLFWwindow, width: c_int, height: c_int) {
-    send(window, InternalEvent::User(Event::Resize(width, height)));
+    send(window, InternalEvent::User(Event::Resize(width as u32, height as u32)));
 }
 
 pub extern "C" fn content_scale_change(window: *mut GLFWwindow, x: c_float, y: c_float) {

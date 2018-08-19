@@ -30,8 +30,8 @@ pub use self::structure::Struct;
 
 use std::fmt::Debug;
 
-use gfx::GlslType;
+use gfx::GlslDataType;
 
 pub trait Attribute : Debug + Copy {
-    type Type: GlslType;
+    type Type: GlslDataType;
 }
